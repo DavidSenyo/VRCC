@@ -97,7 +97,7 @@ server <- function(input, output, session) {
                                         "<br><b>Launched Date:</b>", Launched.Date,
                                         "<br><b>Status:</b>", Status,
                                         "<br><br>",
-                                        "<br><b>Link to work progress pics/info:</b>", Link
+                                        "<br><b>Link to work progress pics/info:</b>", web_address
                                          )
                          )
       } else {
@@ -144,7 +144,7 @@ server <- function(input, output, session) {
                                           "<br><b>Launched Date:</b>", Launched.Date,
                                           "<br><b>Status:</b>", Status,
                                           "<br><br>", 
-                                          "<br><b>Link to work progress pics/info:</b>", Link
+                                          "<br><b>Link to work progress pics/info:</b>", web_address
                                            )
                             
                             )
