@@ -120,19 +120,19 @@ ui <- dashboardPage(
         
         title = tagList(
           
-          tags$img(
-            src = "ghana_logo.png",
-            height = "30px",
-            style = "margin-right:10px;"
-          ),
+          # tags$img(
+          #   src = "ghana_logo.png",
+          #   height = "30px",
+          #   style = "margin-right:10px;"
+          # ),
           
-          "Government of Ghana Projects' Map in Volta Region",
+          "Government of Ghana Projects' Map in Volta Region"
           
-          tags$img(
-            src = "vrcc_logo.png",
-            height = "30px",
-            style = "margin-left:10px; float:right;"
-          )
+          # tags$img(
+          #   src = "vrcc_logo.png",
+          #   height = "30px",
+          #   style = "margin-left:10px; float:right;"
+          # )
           
         ),
         
