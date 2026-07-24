@@ -90,12 +90,14 @@ server <- function(input, output, session) {
                           
                           popup = ~paste(
                                         "<b>Project Type:</b>", Project.Type,
-                                        "<br><br>",   # blank line
+                                        "<br><br>",   
                                         "<b>Project Name:</b>", Project.Name,
                                         "<br><b>Location:</b>", Location,
                                         "<br><b>Summary:</b>", Summary,
                                         "<br><b>Launched Date:</b>", Launched.Date,
-                                        "<br><b>Status:</b>", Status
+                                        "<br><b>Status:</b>", Status,
+                                        "<br><br>",
+                                        "<br><b>Link to work progress pics/info:</b>", Link
                                          )
                          )
       } else {
@@ -135,12 +137,14 @@ server <- function(input, output, session) {
                             
                             popup = ~paste(
                                           "<b>Project Type:</b>", Project.Type,
-                                          "<br><br>",   # blank line
+                                          "<br><br>", 
                                           "<b>Project Name:</b>", Project.Name,
                                           "<br><b>Location:</b>", Location,
                                           "<br><b>Summary:</b>", Summary,
                                           "<br><b>Launched Date:</b>", Launched.Date,
-                                          "<br><b>Status:</b>", Status
+                                          "<br><b>Status:</b>", Status,
+                                          "<br><br>", 
+                                          "<br><b>Link to work progress pics/info:</b>", Link
                                            )
                             
                             )
