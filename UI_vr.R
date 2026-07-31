@@ -55,7 +55,7 @@ ui <- dashboardPage(
   dashboardHeader(
     
     
-    #Bigger title with full meaning as subtitle
+    
     title = tags$div(
                     tags$strong("VRCC", style = "font-size: 20px; line-height: 1.2;"),
                     tags$div("Volta Regional Coordinating Council",
@@ -120,19 +120,19 @@ ui <- dashboardPage(
         
         title = tagList(
           
-          # tags$img(
-          #   src = "ghana_logo.png",
-          #   height = "30px",
-          #   style = "margin-right:10px;"
-          # ),
+          tags$img(
+            src = "ghana_logo.png",
+            height = "30px",
+            style = "margin-right:10px;"
+          ),
           
-          "Government of Ghana Projects' Map in Volta Region"
+          "Government of Ghana Projects' Map in Volta Region" ,
           
-          # tags$img(
-          #   src = "vrcc_logo.png",
-          #   height = "30px",
-          #   style = "margin-left:10px; float:right;"
-          # )
+          tags$img(
+            src = "vrcc_logo.png",
+            height = "30px",
+            style = "margin-left:10px; float:right;"
+          )
           
         ),
         
@@ -146,5 +146,5 @@ ui <- dashboardPage(
       )
     ), br(), hr()
   ),
-  skin = "green"  #c("green", "blue", "red", "purple", "yellow", "black")
+  skin = "purple"  #c("green", "blue", "red", "purple", "yellow", "black")
 )
