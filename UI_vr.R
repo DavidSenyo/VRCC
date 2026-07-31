@@ -146,5 +146,5 @@ ui <- dashboardPage(
       )
     ), br(), hr()
   ),
-  skin = "purple"  #c("green", "blue", "red", "purple", "yellow", "black")
+  skin = "green"  #c("green", "blue", "red", "purple", "yellow", "black")
 )
