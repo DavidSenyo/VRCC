@@ -83,10 +83,30 @@ server <- function(input, output, session) {
                           data = pts,
                           lng = ~longitude,
                           lat = ~latitude,
-                          icon = ~awesomeIcons(icon = "wrench",
-                                               iconColor = "white",
-                                               library = "fa",
-                                               markerColor = getColor(Status)),
+                          icon = ~awesomeIcons(
+                                               icon = ifelse(
+                                                             Project.Type == "Infrastructure", "home",
+                                                      ifelse(
+                                                             Project.Type == "The Big Push", "wrench",
+                                                      ifelse(
+                                                             Project.Type == "24hr Eco Market", "flag",
+                                                            "home"   
+                                                            )
+                                                            )
+                                                            ),
+                                               library = ifelse(
+                                                                Project.Type == "Infrastructure", "glyphicon",
+                                                         ifelse(
+                                                                Project.Type == "The Big Push", "ion",
+                                                         ifelse(
+                                                                Project.Type == "24hr Eco Market", "fa",
+                                                               "glyphicon"  
+                                                               )
+                                                               )
+                                                               ),
+                          iconColor = "white",
+                          markerColor = getColor(Status)
+                          ),
                           
                           popup = ~paste(
                                         "<b>Project Type:</b>", Project.Type,
@@ -130,10 +150,30 @@ server <- function(input, output, session) {
           addAwesomeMarkers(data = pts,
                             lng = ~longitude,
                             lat = ~latitude,
-                            icon = ~awesomeIcons(icon = "wrench",
-                                                 iconColor = "white",
-                                                 library = "fa",
-                                                 markerColor = getColor(Status)),
+                            icon = ~awesomeIcons(
+                                                 icon = ifelse(
+                                                               Project.Type == "Infrastructure", "home",
+                                                        ifelse(
+                                                               Project.Type == "The Big Push", "wrench",
+                                                        ifelse(
+                                                              Project.Type == "24hr Eco Market", "flag",
+                                                              "home"   
+                                                              )
+                                                              )
+                                                              ),
+                                                  library = ifelse(
+                                                                   Project.Type == "Infrastructure", "glyphicon",
+                                                            ifelse(
+                                                                   Project.Type == "The Big Push", "ion",
+                                                            ifelse(
+                                                                   Project.Type == "24hr Eco Market", "fa",
+                                                                  "glyphicon"  
+                                                                  )
+                                                                  )
+                                                                  ),
+                              iconColor = "white",
+                              markerColor = getColor(Status)
+                            ),
                             
                             popup = ~paste(
                                           "<b>Project Type:</b>", Project.Type,
