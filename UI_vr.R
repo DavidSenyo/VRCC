@@ -11,7 +11,7 @@ library(readxl)
 library(shinyWidgets)
 library(htmlwidgets)
 
-
+library(shinyMobile)
 
 
 # ===============================
@@ -96,7 +96,8 @@ ui <- dashboardPage(
     
     tags$div(
       style = "position:absolute; bottom:20px; left:15px; right:15px;",
-      tags$small(HTML("&copy; 2026 Volta Regional Coordinating Council<br/>Creator: D.A (Se Nyo) for VRCC"),
+      tags$small(HTML("&copy; 2026 Volta Regional Coordinating Council<br/>
+                      Creator: D.A Analytics"),
                  style = "color:gray; font-size:12px;")
     )
   ),
@@ -148,3 +149,6 @@ ui <- dashboardPage(
   ),
   skin = "green"  #c("green", "blue", "red", "purple", "yellow", "black")
 )
+
+
+
