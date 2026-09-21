@@ -239,7 +239,7 @@ server <- function(input, output, session) {
         <body>
           <div class="header">%s</div>
           <div class="map-wrapper">%s</div>
-          <div class="watermark">(c) 2026 Volta Region. Creator: D.S.A (for Regional Minister)</div>
+          <div class="watermark">(c) 2026 Volta Region. Creator: D.A Analytics(for VRCC)</div>
         </body>
         </html>',
         district_name,
