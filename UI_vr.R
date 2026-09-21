@@ -12,8 +12,7 @@ library(dplyr)
 #library(openxlsx)
 library(shinyWidgets)
 library(htmlwidgets)
-
-library(shinyMobile)
+#library(shinyMobile)
 
 
 # ===============================
