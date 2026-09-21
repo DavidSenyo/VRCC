@@ -7,7 +7,8 @@ library(shinydashboard)
 library(leaflet)
 library(sf)
 library(dplyr)
-library(readxl)
+#library(readxl)
+library(openxlsx)
 library(shinyWidgets)
 library(htmlwidgets)
 
@@ -28,6 +29,7 @@ volta_districts <- sort(unique(volta_data$NAME_2))
 pal <- colorFactor("Set3", domain = volta_districts)
 
 # ---- Read VRCC projects (with Project Type) ----
+vrcc_projects <- read.xlsx("vrcc.xlsx", sheet = "Sheet1")
 vrcc_projects <- read_excel("vrcc.xlsx", sheet = "Sheet1")
 # Clean column names (remove spaces)
 names(vrcc_projects) <- make.names(names(vrcc_projects))
