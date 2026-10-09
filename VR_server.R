@@ -3,13 +3,67 @@
 
 
 
-
 make_download_map_mobile <- function(map) {
-  # Give the standalone widget a phone-sized canvas
-  map$width <- "100%"
-  map$height <- "100vh"
   
-  # Add mobile viewport and sizing rules to the downloaded HTML
+  # Let CSS control the map height
+  map$width <- "100%"
+  map$height <- "100%"
+  
+  mobile_css <- "
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    .leaflet.html-widget {
+      width: 100% !important;
+      height: calc(100vh - 65px) !important;
+      height: calc(100dvh - 65px) !important;
+      min-height: 0 !important;
+    }
+
+    .leaflet-popup-content-wrapper {
+      max-width: calc(100vw - 45px);
+    }
+
+    .leaflet-popup-content {
+      max-width: calc(100vw - 85px);
+      overflow-wrap: anywhere;
+    }
+
+    .leaflet-popup-content img,
+    .leaflet-popup-content video {
+      max-width: 100%;
+      height: auto;
+    }
+
+    @media (max-width: 600px) {
+
+      .vr-header {
+        font-size: 15px !important;
+        padding: 10px !important;
+      }
+
+      .leaflet.html-widget {
+        height: calc(100vh - 55px) !important;
+        height: calc(100dvh - 55px) !important;
+      }
+
+      .vr-watermark {
+        font-size: 9px !important;
+        padding: 4px 6px !important;
+        bottom: 5px !important;
+        right: 5px !important;
+      }
+    }
+  "
+  
   map <- htmlwidgets::prependContent(
     map,
     htmltools::tags$head(
@@ -17,60 +71,44 @@ make_download_map_mobile <- function(map) {
         name = "viewport",
         content = "width=device-width, initial-scale=1"
       ),
-      htmltools::tags$style(htmltools::HTML("
-        html, body {
-          width: 100%;
-          height: 100%;
-          margin: 0;
-          padding: 0;
-          overflow: hidden;
-        }
-
-        .leaflet.html-widget {
-          width: 100% !important;
-          height: 100vh !important;
-          height: 100dvh !important;
-        }
-
-        .leaflet-popup-content-wrapper {
-          max-width: calc(100vw - 45px);
-        }
-
-        .leaflet-popup-content {
-          max-width: calc(100vw - 85px);
-          overflow-wrap: anywhere;
-        }
-
-        .leaflet-popup-content img,
-        .leaflet-popup-content video {
-          max-width: 100%;
-          height: auto;
-        }
-      "))
+      htmltools::tags$style(
+        htmltools::HTML(mobile_css)
+      )
     )
   )
   
-  # Ask Leaflet to recalculate its size after the phone opens the file
   map <- htmlwidgets::onRender(
     map,
     "
     function(el, x) {
+
       var map = this;
 
       function resizeMap() {
-        map.invalidateSize();
+        if (map && map.invalidateSize) {
+          map.invalidateSize();
+        }
       }
 
       setTimeout(resizeMap, 300);
-      window.addEventListener('resize', resizeMap);
-      window.addEventListener('orientationchange', function() {
-        setTimeout(resizeMap, 300);
-      });
+      setTimeout(resizeMap, 800);
+
+      window.addEventListener(
+        'resize',
+        resizeMap
+      );
+
+      window.addEventListener(
+        'orientationchange',
+        function() {
+          setTimeout(resizeMap, 400);
+        }
+      );
     }
     "
   )
   
-  map
+  return(map)
 }
 
 
@@ -248,11 +286,10 @@ server <- function(input, output, session) {
       }
 
       .leaflet.html-widget {
-        width: 100% !important;
-        height: calc(100vh - 65px) !important;
-        min-height: 450px;
-      }
-
+  width: 100% !important;
+  height: calc(100vh - 65px) !important;
+  min-height: 0;
+}
       .vr-watermark {
         position: fixed;
         bottom: 10px;
