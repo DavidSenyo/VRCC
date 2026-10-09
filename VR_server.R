@@ -346,23 +346,20 @@ server <- function(input, output, session) {
     )
   })
   
+#CORRECTED  
   output$download_map <- shiny::downloadHandler(
     filename = function() {
-      district_file <- paste(input$districts, collapse = "_")
+      req(input$districts)
       
-      if (!nzchar(district_file)) {
-        district_file <- "All_Districts"
-      }
-      
-      district_file <- gsub(
+      district_name <- gsub(
         "[^A-Za-z0-9_-]+",
         "_",
-        district_file
+        input$districts
       )
       
       paste0(
         "vrccproj_",
-        district_file,
+        district_name,
         "_",
         format(Sys.time(), "%Y-%m-%d_%H-%M-%S"),
         ".html"
@@ -375,30 +372,12 @@ server <- function(input, output, session) {
       
       req(nrow(df) > 0)
       
-      district_name <- paste(
-        input$districts,
-        collapse = ", "
-      )
-      
-      status_text <- if (length(input$status_filter) > 0) {
-        paste(input$status_filter, collapse = ", ")
-      } else {
-        "No status selected"
-      }
-      
-      type_text <- if (length(input$type_filter) > 0) {
-        paste(input$type_filter, collapse = ", ")
-      } else {
-        "No type selected"
-      }
-      
       heading_text <- paste0(
-        "Projects in Volta Region - ",
-        district_name,
+        "Projects in ", input$districts,
         " | Status: ",
-        status_text,
+        paste(input$status_filter, collapse = ", "),
         " | Type: ",
-        type_text
+        paste(input$type_filter, collapse = ", ")
       )
       
       map <- build_project_map(
@@ -411,34 +390,19 @@ server <- function(input, output, session) {
         heading_text
       )
       
-      
-      # Your existing code builds the complete downloadable map
-      # and stores it in export_map.
-      # Keep your existing htmlwidgets::onRender(export_map, vr_media_js) too.
-      ##ADDED
-      export_map <- make_download_map_mobile(export_map)
-      
-      htmlwidgets::saveWidget(
-        widget = export_map,
-        file = file,
-        selfcontained = TRUE
-      )
-      
-      
+      map <- make_download_map_mobile(map)
       
       htmlwidgets::saveWidget(
         widget = map,
         file = file,
         selfcontained = TRUE,
-        title = paste(
-          "VRCC Projects -",
-          district_name
-        )
+        title = "VRCC Projects Map"
       )
     },
     
     contentType = "text/html"
   )
+  
   
   # ============================================================
   # TAB 2: Ho Municipal
@@ -484,6 +448,8 @@ server <- function(input, output, session) {
     )
   })
   
+  ##CORRECTED
+  
   output$download_hm_map <- shiny::downloadHandler(
     filename = function() {
       paste0(
@@ -501,10 +467,8 @@ server <- function(input, output, session) {
       
       heading_text <- paste0(
         "Projects in Ho Municipal",
-        " | Status: ",
-        input$hm_status_filter,
-        " | Type: ",
-        input$hm_type_filter
+        " | Status: ", input$hm_status_filter,
+        " | Type: ", input$hm_type_filter
       )
       
       map <- build_project_map(
@@ -517,20 +481,7 @@ server <- function(input, output, session) {
         heading_text
       )
       
-      
-      
-      
-      ###ADDED
-      export_map <- make_download_map_mobile(export_map)
-      
-      htmlwidgets::saveWidget(
-        widget = export_map,
-        file = file,
-        selfcontained = TRUE
-      )
-      
-      
-      
+      map <- make_download_map_mobile(map)
       
       htmlwidgets::saveWidget(
         widget = map,
@@ -542,6 +493,7 @@ server <- function(input, output, session) {
     
     contentType = "text/html"
   )
+  
   
   # ============================================================
   # TAB 3: Overview
