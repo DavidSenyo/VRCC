@@ -1,31 +1,40 @@
 
 
 
-
-
 make_download_map_mobile <- function(map) {
   
-  # Let CSS control the map height
+  # Set a reliable initial widget size.
+  # CSS will adapt the display to the browser.
   map$width <- "100%"
-  map$height <- "100%"
+  map$height <- 600
   
   mobile_css <- "
     html, body {
-      width: 100%;
-      height: 100%;
       margin: 0;
       padding: 0;
+      width: 100%;
     }
 
     body {
-      overflow: hidden;
+      font-family: Arial, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .vr-header {
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    #htmlwidget_container {
+      width: 100% !important;
+      position: relative !important;
     }
 
     .leaflet.html-widget {
+      display: block !important;
       width: 100% !important;
-      height: calc(100vh - 65px) !important;
-      height: calc(100dvh - 65px) !important;
-      min-height: 0 !important;
+      height: 600px !important;
+      min-height: 300px !important;
     }
 
     .leaflet-popup-content-wrapper {
@@ -43,16 +52,18 @@ make_download_map_mobile <- function(map) {
       height: auto;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 767px) {
 
       .vr-header {
         font-size: 15px !important;
         padding: 10px !important;
+        line-height: 1.4;
       }
 
       .leaflet.html-widget {
-        height: calc(100vh - 55px) !important;
-        height: calc(100dvh - 55px) !important;
+        height: 70vh !important;
+        height: 70dvh !important;
+        min-height: 300px !important;
       }
 
       .vr-watermark {
@@ -69,7 +80,10 @@ make_download_map_mobile <- function(map) {
     htmltools::tags$head(
       htmltools::tags$meta(
         name = "viewport",
-        content = "width=device-width, initial-scale=1"
+        content = paste0(
+          "width=device-width, ",
+          "initial-scale=1"
+        )
       ),
       htmltools::tags$style(
         htmltools::HTML(mobile_css)
@@ -82,16 +96,21 @@ make_download_map_mobile <- function(map) {
     "
     function(el, x) {
 
-      var map = this;
+      var leafletMap = this;
 
       function resizeMap() {
-        if (map && map.invalidateSize) {
-          map.invalidateSize();
+        if (
+          leafletMap &&
+          typeof leafletMap.invalidateSize === 'function'
+        ) {
+          leafletMap.invalidateSize({
+            pan: false
+          });
         }
       }
 
       setTimeout(resizeMap, 300);
-      setTimeout(resizeMap, 800);
+      setTimeout(resizeMap, 1000);
 
       window.addEventListener(
         'resize',
@@ -101,7 +120,7 @@ make_download_map_mobile <- function(map) {
       window.addEventListener(
         'orientationchange',
         function() {
-          setTimeout(resizeMap, 400);
+          setTimeout(resizeMap, 500);
         }
       );
     }
@@ -109,6 +128,36 @@ make_download_map_mobile <- function(map) {
   )
   
   return(map)
+}
+
+
+# ============================================================
+# SHARED HTML DOWNLOAD FUNCTION
+# ============================================================
+
+save_vrcc_html <- function(
+    map,
+    heading_text,
+    file,
+    title
+) {
+  
+  # Add project media gallery, header, and watermark
+  map <- make_downloadable_map(
+    map,
+    heading_text
+  )
+  
+  # Apply mobile-friendly formatting
+  map <- make_download_map_mobile(map)
+  
+  # Save the interactive HTML map
+  htmlwidgets::saveWidget(
+    widget = map,
+    file = file,
+    selfcontained = TRUE,
+    title = title
+  )
 }
 
 
@@ -258,6 +307,8 @@ server <- function(input, output, session) {
   
   # Add the gallery behavior, heading, and styling to a download.
   make_downloadable_map <- function(map, heading_text) {
+    
+    # Preserve the photo/video slideshow
     map <- htmlwidgets::onRender(
       map,
       vr_media_js
@@ -265,54 +316,52 @@ server <- function(input, output, session) {
     
     download_css <- paste0(
       "
-      html, body {
-        margin: 0;
-        padding: 0;
-      }
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
 
-      body {
-        font-family: Arial, sans-serif;
-        background: #f5f5f5;
-      }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
 
-      .vr-header {
-        background: #ace500;
-        padding: 15px 20px;
-        text-align: center;
-        font-size: 1.4rem;
-        font-weight: bold;
-        color: #1e1e4c;
-        border-bottom: 2px solid #1e1e4c;
-      }
+    .vr-header {
+      background: #ace500;
+      padding: 15px 20px;
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #1e1e4c;
+      border-bottom: 2px solid #1e1e4c;
+      box-sizing: border-box;
+    }
 
-      .leaflet.html-widget {
-  width: 100% !important;
-  height: calc(100vh - 65px) !important;
-  min-height: 0;
-}
-      .vr-watermark {
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        background: rgba(255,255,255,0.85);
-        padding: 5px 12px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-family: monospace;
-        color: #333;
-        z-index: 10000;
-        pointer-events: none;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      }
-      ",
+    .vr-watermark {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(255,255,255,0.85);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: monospace;
+      color: #333;
+      z-index: 10000;
+      pointer-events: none;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    ",
       vr_media_css
     )
     
     map <- htmlwidgets::prependContent(
       map,
+      
       htmltools::tags$style(
         htmltools::HTML(download_css)
       ),
+      
       htmltools::tags$div(
         class = "vr-header",
         heading_text
@@ -321,13 +370,14 @@ server <- function(input, output, session) {
     
     map <- htmlwidgets::appendContent(
       map,
+      
       htmltools::tags$div(
         class = "vr-watermark",
         "(c) 2026 Volta Region. Creator: D.S.A (for Regional Minister)"
       )
     )
     
-    map
+    return(map)
   }
   
   # ============================================================
@@ -384,8 +434,11 @@ server <- function(input, output, session) {
   })
   
 #CORRECTED  
+
   output$download_map <- shiny::downloadHandler(
+    
     filename = function() {
+      
       req(input$districts)
       
       district_name <- gsub(
@@ -398,29 +451,47 @@ server <- function(input, output, session) {
         "vrccproj_",
         district_name,
         "_",
-        format(Sys.time(), "%Y-%m-%d_%H-%M-%S"),
+        format(
+          Sys.time(),
+          "%Y-%m-%d_%H-%M-%S"
+        ),
         ".html"
       )
     },
     
     content = function(file) {
+      
       df <- filtered_data()
       pts <- filtered_projects()
       
       req(nrow(df) > 0)
       
       heading_text <- paste0(
-        "Projects in ", input$districts,
+        "Projects in ",
+        input$districts,
         " | Status: ",
-        paste(input$status_filter, collapse = ", "),
+        paste(
+          input$status_filter,
+          collapse = ", "
+        ),
         " | Type: ",
-        paste(input$type_filter, collapse = ", ")
+        paste(
+          input$type_filter,
+          collapse = ", "
+        )
       )
       
       map <- build_project_map(
         district_polygons = df,
         projects = pts
       )
+      
+      # save_vrcc_html(
+      #   map = map,
+      #   heading_text = heading_text,
+      #   file = file,
+      #   title = "VRCC Projects Map"
+      # )
       
       map <- make_downloadable_map(
         map,
@@ -488,15 +559,21 @@ server <- function(input, output, session) {
   ##CORRECTED
   
   output$download_hm_map <- shiny::downloadHandler(
+    
     filename = function() {
+      
       paste0(
         "vrccproj_Ho_Municipal_",
-        format(Sys.time(), "%Y-%m-%d_%H-%M-%S"),
+        format(
+          Sys.time(),
+          "%Y-%m-%d_%H-%M-%S"
+        ),
         ".html"
       )
     },
     
     content = function(file) {
+      
       df <- fltd_data()
       pts <- fltd_projects()
       
@@ -504,14 +581,23 @@ server <- function(input, output, session) {
       
       heading_text <- paste0(
         "Projects in Ho Municipal",
-        " | Status: ", input$hm_status_filter,
-        " | Type: ", input$hm_type_filter
+        " | Status: ",
+        input$hm_status_filter,
+        " | Type: ",
+        input$hm_type_filter
       )
       
       map <- build_project_map(
         district_polygons = df,
         projects = pts
       )
+      
+      # save_vrcc_html(
+      #   map = map,
+      #   heading_text = heading_text,
+      #   file = file,
+      #   title = "VRCC Projects - Ho Municipal"
+      # )
       
       map <- make_downloadable_map(
         map,
@@ -526,6 +612,7 @@ server <- function(input, output, session) {
         selfcontained = TRUE,
         title = "VRCC Projects - Ho Municipal"
       )
+      
     },
     
     contentType = "text/html"

@@ -65,7 +65,15 @@ vrcc_projects <- readxl::read_excel(
 )
 
 
-vrcc_projects$Status <- trimws(vrcc_projects$Status)
+#vrcc_projects$Status <- trimws(vrcc_projects$Status)
+
+vrcc_projects <- vrcc_projects %>%
+  dplyr::mutate(
+    Status = trimws(as.character(Status)),
+    District = trimws(as.character(District)),
+    Project_Type = trimws(as.character(Project_Type)),
+    Project_Name = as.character(Project_Name)
+  )
 
 
 vrcc_pictures <- readxl::read_excel(
@@ -73,7 +81,23 @@ vrcc_pictures <- readxl::read_excel(
   sheet = "media"
 )
 
-vrcc_pictures$Media_type <- trimws(vrcc_pictures$Media_type)
+#vrcc_pictures$Media_type <- trimws(vrcc_pictures$Media_type)
+
+# Normalize common variations of the media type column
+media_type_columns <- intersect(
+  c("Media_Type", "Media_type", "media_type", "media_Type"),
+  names(vrcc_pictures)
+)
+
+if (length(media_type_columns) > 0) {
+  source_column <- media_type_columns[1]
+  
+  vrcc_pictures$Media_Type <- trimws(
+    as.character(vrcc_pictures[[source_column]])
+  )
+} else {
+  vrcc_pictures$Media_Type <- NA_character_
+}
 
 
 required_project_columns <- c(
@@ -282,10 +306,30 @@ make_photo_gallery <- function(project_id) {
     return("<b>Project media:</b> None available")
   }
   
+  # types <- rep("image", nrow(media))
+  # 
+  # entered_types <- tolower(trimws(media$Media_Type))
+  # types[!is.na(entered_types) & entered_types == "video"] <- "video"
+  # 
+  # video_urls <- grepl(
+  #   "/video/upload/|\\.(mp4|webm|ogg)($|\\?)",
+  #   media$Picture_URL,
+  #   ignore.case = TRUE
+  # )
+  # 
+  # types[video_urls] <- "video"
+  
+ 
   types <- rep("image", nrow(media))
   
-  entered_types <- tolower(trimws(media$Media_Type))
-  types[!is.na(entered_types) & entered_types == "video"] <- "video"
+  entered_types <- tolower(
+    trimws(as.character(media$Media_Type))
+  )
+  
+  types[
+    !is.na(entered_types) &
+      entered_types == "video"
+  ] <- "video"
   
   video_urls <- grepl(
     "/video/upload/|\\.(mp4|webm|ogg)($|\\?)",
@@ -295,7 +339,8 @@ make_photo_gallery <- function(project_id) {
   
   types[video_urls] <- "video"
   
-  captions <- media$Caption
+  
+   captions <- media$Caption
   
   missing_caption <- is.na(captions) |
     !nzchar(trimws(captions))
