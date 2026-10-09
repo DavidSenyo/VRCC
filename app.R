@@ -9,9 +9,10 @@
 # ===========================================================================================================================
 
 
+source("DataRead.R")
 
-source("UI_vr.R")
+source("VR_ui.R")
 
-source("Server_vr.R")
+source("VR_server.R")
 
 shinyApp(ui, server)
