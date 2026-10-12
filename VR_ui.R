@@ -657,10 +657,28 @@ ui <- shinydashboard::dashboardPage(
           # STATISTICS DOWNLOAD BUTTONS
           # =====================================
           
+          # fluidRow(
+          #   column(
+          #     width = 6,
+          #     
+          #     downloadButton(
+          #       outputId = "download_project_statistics",
+          #       label = "Download Statistics (Excel)"
+          #     )
+          #   ),
+          #   
+          #   column(
+          #     width = 6,
+          #     
+          #     downloadButton(
+          #       outputId = "download_statistics_html",
+          #       label = "Download All Graphs (HTML)"
+          #     )
+          #   )
+          # ),
           fluidRow(
             column(
               width = 6,
-              
               downloadButton(
                 outputId = "download_project_statistics",
                 label = "Download Statistics (Excel)"
@@ -669,7 +687,6 @@ ui <- shinydashboard::dashboardPage(
             
             column(
               width = 6,
-              
               downloadButton(
                 outputId = "download_statistics_html",
                 label = "Download All Graphs (HTML)"
