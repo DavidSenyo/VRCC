@@ -1,5 +1,8 @@
 # =============================================================
 # SERVER_VRCC.R - Complete replacement
+# Requires objects from DATAREAD_VRCC.R:
+# volta_data, vrcc_projects_sf, pal, make_photo_gallery,
+# vr_media_js, vr_media_css
 # =============================================================
 
 make_download_map_mobile <- function(map) {
@@ -370,72 +373,166 @@ server <- function(input, output, session) {
   )
   
   # ==================== INTERACTIVE HTML DOWNLOAD ====================
-  # A single Plotly widget avoids the missing dependency problems that can
-  # occur when trying to save four separate widgets with htmltools::save_html.
+  # Four FULL-SIZE, INDEPENDENT self-contained Plotly charts.
+  # Each chart has its own hover, zoom, pan, legend and toolbar.
   output$download_statistics_html <- shiny::downloadHandler(
-    filename=function() paste0("VRCC_Project_Graphs_", Sys.Date(), ".html"),
-    contentType="text/html",
-    content=function(file) {
+    filename = function() {
+      paste0("VRCC_Project_Graphs_", Sys.Date(), ".html")
+    },
+    contentType = "text/html",
+    content = function(file) {
       df <- stats_data()
-      if (!nrow(df)) stop("No project records for the selected filters.")
+      if (nrow(df) == 0L) {
+        stop("No project records match the selected statistics filters.")
+      }
+      
       total <- nrow(df)
-      completed <- sum(df$Status == "Completed", na.rm=TRUE)
+      completed <- sum(df$Status == "Completed", na.rm = TRUE)
       districts <- df$District[!is.na(df$District) & nzchar(df$District)]
       district_count <- dplyr::n_distinct(districts)
       rate <- round(100 * completed / total, 1)
       district_label <- if (is.null(input$stats_district)) "All" else input$stats_district
       type_label <- if (is.null(input$stats_type)) "All" else input$stats_type
       
-      # One interactive Plotly widget with four panels.
-      # Individual live graphs remain unchanged.
+      # IMPORTANT: do not use subplot() here. Each chart is an independent
+      # widget, sized to be readable on both desktop and mobile browsers.
       p1 <- district_plot(district_summary())
       p2 <- status_plot(status_summary())
       p3 <- type_plot(type_summary())
       p4 <- district_status_plot(district_status_summary())
-      combined <- plotly::subplot(
-        p1, p2, p3, p4,
-        nrows=2, shareX=FALSE, shareY=FALSE,
-        margin=0.10, titleX=FALSE, titleY=FALSE
-      ) |>
-        plotly::layout(
-          annotations=list(
-            list(text="Projects by District", x=0.20, y=1.08, xref="paper", yref="paper", showarrow=FALSE),
-            list(text="Projects by Status", x=0.78, y=1.08, xref="paper", yref="paper", showarrow=FALSE),
-            list(text="Projects by Type", x=0.20, y=0.49, xref="paper", yref="paper", showarrow=FALSE),
-            list(text="Status by District", x=0.78, y=0.49, xref="paper", yref="paper", showarrow=FALSE)
-          ),
-          margin=list(t=95, b=105, l=110, r=30),
-          height=950
-        )
       
-      header <- htmltools::tags$div(
-        style="font-family:Arial,sans-serif;background:#0B6E75;color:white;padding:18px;text-align:center;",
-        htmltools::tags$h2("VRCC - Project Statistics"),
-        htmltools::tags$p("Volta Regional Coordinating Council")
-      )
-      summary <- htmltools::tags$div(
-        style="font-family:Arial,sans-serif;background:#F3F7F6;padding:14px 20px;",
-        htmltools::tags$strong("Project Summary"),
-        htmltools::tags$p(paste("District:", district_label, "| Project Type:", type_label)),
-        htmltools::tags$p(paste("Total Projects:", total,
-                                "| Districts Covered:", district_count,
-                                "| Completed:", completed,
-                                "| Completion Rate:", paste0(rate, "%")))
-      )
-      combined <- htmlwidgets::prependContent(combined, header, summary)
-      combined <- htmlwidgets::appendContent(
-        combined,
-        htmltools::tags$div(
-          style="font-family:Arial,sans-serif;text-align:center;padding:15px;font-size:12px;color:#555;",
+      # Each Plotly chart is saved as its OWN self-contained HTML document.
+      # An iframe srcdoc embeds that document without losing widget initialization.
+      # This avoids blank graphs caused by htmltools::save_html() not initializing
+      # multiple independent htmlwidgets embedded in an arbitrary tagList.
+      chart_document <- function(widget, height) {
+        widget <- plotly::layout(
+          widget, autosize = TRUE, height = height,
+          font = list(size = 13)
+        )
+        widget <- plotly::config(
+          widget, responsive = TRUE, displayModeBar = TRUE,
+          displaylogo = FALSE, scrollZoom = TRUE,
+          toImageButtonOptions = list(format = "png", scale = 2)
+        )
+        widget$width <- "100%"
+        widget$height <- paste0(height, "px")
+        temp_chart <- tempfile(fileext = ".html")
+        on.exit(unlink(temp_chart), add = TRUE)
+        htmlwidgets::saveWidget(
+          widget, file = temp_chart, selfcontained = TRUE,
+          title = "VRCC Interactive Chart", background = "white"
+        )
+        paste(readLines(temp_chart, warn = FALSE, encoding = "UTF-8"),
+              collapse = "\n")
+      }
+      
+      make_chart_card <- function(title, widget, height = 460) {
+        chart_html <- chart_document(widget, height)
+        htmltools::tags$section(
+          class = "graph-card",
+          htmltools::tags$h2(title),
+          htmltools::tags$iframe(
+            title = title,
+            srcdoc = chart_html,
+            loading = "eager",
+            style = paste0(
+              "display:block;width:100%;height:", height + 25,
+              "px;border:0;background:white;"
+            )
+          )
+        )
+      }
+      
+      # Use htmltools to retain four independent htmlwidgets, including
+      # each widget's JavaScript dependencies. Then embed all dependencies.
+      page <- htmltools::tagList(
+        htmltools::tags$head(
+          htmltools::tags$meta(charset = "utf-8"),
+          htmltools::tags$meta(
+            name = "viewport",
+            content = "width=device-width, initial-scale=1"
+          ),
+          htmltools::tags$style(htmltools::HTML('
+            * { box-sizing: border-box; }
+            body { margin: 0; background: #F3F7F6; color: #17353B;
+                   font-family: Arial, Helvetica, sans-serif; }
+            .report-header { background: #0B6E75; color: white;
+                             padding: 24px 18px; text-align: center; }
+            .report-header h1 { margin: 0 0 8px; font-size: 26px; }
+            .report-header p { margin: 0; }
+            .report-content { max-width: 1120px; margin: 0 auto; padding: 16px; }
+            .filter-line { margin: 8px 0 16px; overflow-wrap: anywhere; }
+            .metrics { display: grid; grid-template-columns: repeat(4, 1fr);
+                       gap: 12px; margin: 16px 0 22px; }
+            .metric { background: white; border-radius: 8px; padding: 16px;
+                      box-shadow: 0 1px 5px rgba(0,0,0,.09); }
+            .metric strong { display: block; font-size: 25px; color: #0B6E75; }
+            .metric span { display: block; font-size: 13px; margin-top: 5px; }
+            .graph-card { background: white; border-radius: 9px;
+                          padding: 16px 12px; margin: 18px 0;
+                          box-shadow: 0 1px 6px rgba(0,0,0,.1); }
+            .graph-card h2 { margin: 6px 10px 10px; font-size: 19px; }
+            .graph-wrap { width: 100%; min-width: 0; overflow: hidden; }
+            .graph-wrap .html-widget { width: 100% !important; }
+            .report-footer { text-align: center; color: #556;
+                             padding: 22px; font-size: 12px; }
+            @media (max-width: 700px) {
+              .report-header h1 { font-size: 20px; }
+              .metrics { grid-template-columns: repeat(2, 1fr); }
+              .metric strong { font-size: 21px; }
+              .report-content { padding: 8px; }
+              .graph-card { padding: 10px 4px; }
+              .graph-card h2 { font-size: 16px; }
+            }
+          '))
+        ),
+        htmltools::tags$header(
+          class = "report-header",
+          htmltools::tags$h1("VRCC - Project Statistics"),
+          htmltools::tags$p("Volta Regional Coordinating Council")
+        ),
+        htmltools::tags$main(
+          class = "report-content",
+          htmltools::tags$p(
+            class = "filter-line",
+            htmltools::tags$strong("District: "), district_label,
+            " | ", htmltools::tags$strong("Project Type: "), type_label
+          ),
+          htmltools::tags$div(
+            class = "metrics",
+            htmltools::tags$div(class = "metric",
+                                htmltools::tags$strong(total), htmltools::tags$span("Total Projects")),
+            htmltools::tags$div(class = "metric",
+                                htmltools::tags$strong(district_count), htmltools::tags$span("Districts Covered")),
+            htmltools::tags$div(class = "metric",
+                                htmltools::tags$strong(completed), htmltools::tags$span("Completed Projects")),
+            htmltools::tags$div(class = "metric",
+                                htmltools::tags$strong(paste0(rate, "%")), htmltools::tags$span("Completion Rate"))
+          ),
+          make_chart_card("1. Projects by District / Municipality", p1,
+                          height = max(440, min(1000, 35 * nrow(district_summary()) + 180))),
+          make_chart_card("2. Projects by Status", p2, height = 460),
+          make_chart_card("3. Projects by Type", p3,
+                          height = max(440, min(850, 40 * nrow(type_summary()) + 160))),
+          make_chart_card("4. Project Status by District", p4, height = 540)
+        ),
+        htmltools::tags$footer(
+          class = "report-footer",
           "(c) 2026 Volta Regional Coordinating Council (VRCC)"
         )
       )
-      htmlwidgets::saveWidget(
-        widget=combined, file=file, selfcontained=TRUE,
-        title="VRCC - Project Statistics"
+      
+      # All four iframe srcdoc values already contain self-contained Plotly
+      # documents. No separate dependencies or Pandoc conversion are needed.
+      htmltools::save_html(
+        htmltools::browsable(page),
+        file = file,
+        background = "white"
       )
-      if (!file.exists(file) || file.info(file)$size == 0)
-        stop("Interactive HTML file was not created successfully.")
+      if (!file.exists(file) || file.info(file)$size == 0L) {
+        stop("The interactive HTML report could not be created.")
+      }
     }
   )
   
