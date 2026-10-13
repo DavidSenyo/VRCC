@@ -46,21 +46,32 @@ server <- function(input, output, session) {
   
   # ==================== SHARED MAP HELPERS ====================
   project_marker_icons <- function(pts) {
+    
     icon_by_type <- c(
-      "Infrastructure"="home", "The Big Push"="wrench",
-      "24hr Eco Market"="flag", "Infrastructure-Road"="road",
-      "New Project Type 5"="plus", "New Project Type 6"="leaf"
-    )
+                      "Infrastructure"="home", 
+                      "The Big Push"="wrench",
+                      "24hr Eco Market"="flag", 
+                      "Infrastructure-Road"="road",
+                      "New Project Type 5"="plus", 
+                      "New Project Type 6"="leaf"
+                      )
     library_by_type <- c(
-      "Infrastructure"="glyphicon", "The Big Push"="glyphicon",
-      "24hr Eco Market"="fa", "Infrastructure-Road"="glyphicon",
-      "New Project Type 5"="glyphicon", "New Project Type 6"="glyphicon"
-    )
+                        "Infrastructure"="glyphicon", 
+                        "The Big Push"="glyphicon",
+                        "24hr Eco Market"="fa", 
+                        "Infrastructure-Road"="glyphicon",
+                        "New Project Type 5"="glyphicon", 
+                        "New Project Type 6"="glyphicon"
+                        )
     marker_color_by_type <- c(
-      "Infrastructure"="blue", "The Big Push"="orange",
-      "24hr Eco Market"="green", "Infrastructure-Road"="purple",
-      "New Project Type 5"="red", "New Project Type 6"="cadetblue"
-    )
+                              "Infrastructure"="blue",
+                              "The Big Push"="orange",
+                              "24hr Eco Market"="green", 
+                              "Infrastructure-Road"="purple",
+                              "New Project Type 5"="red",
+                              "New Project Type 6"="cadetblue"
+                              )
+    
     types <- as.character(pts$Project_Type)
     icons <- unname(icon_by_type[types]); icons[is.na(icons)] <- "home"
     libs <- unname(library_by_type[types]); libs[is.na(libs)] <- "glyphicon"
@@ -68,21 +79,22 @@ server <- function(input, output, session) {
     leaflet::awesomeIcons(icon=icons, library=libs, iconColor="white", markerColor=colors)
   }
   
+  
   popup_text <- function(value) {
-    if (length(value) == 0L || is.na(value[1])) return("—")
-    htmltools::htmlEscape(as.character(value[1]))
-  }
+                                if (length(value) == 0L || is.na(value[1])) return("—")
+                                htmltools::htmlEscape(as.character(value[1]))
+                                }
   
   project_popups <- function(pts) {
     vapply(seq_len(nrow(pts)), function(i) {
       paste0(
-        "<b>Project Type:</b> ", popup_text(pts$Project_Type[i]), "<br><br>",
-        "<b>Project Name:</b> ", popup_text(pts$Project_Name[i]),
-        "<br><b>Location:</b> ", popup_text(pts$Location[i]),
-        "<br><b>Summary:</b> ", popup_text(pts$Summary[i]),
-        "<br><b>Launched Date:</b> ", popup_text(pts$Launched.Date[i]),
-        "<br><b>Status:</b> ", popup_text(pts$Status[i]),
-        "<br><br>", make_photo_gallery(pts$Project_ID[i])
+              "<b>Project Type:</b> ", popup_text(pts$Project_Type[i]), "<br><br>",
+              "<b>Project Name:</b> ", popup_text(pts$Project_Name[i]),
+              "<br><b>Location:</b> ", popup_text(pts$Location[i]),
+              "<br><b>Summary:</b> ", popup_text(pts$Summary[i]),
+              "<br><b>Launched Date:</b> ", popup_text(pts$Launched.Date[i]),
+              "<br><b>Status:</b> ", popup_text(pts$Status[i]),
+              "<br><br>", make_photo_gallery(pts$Project_ID[i])
       )
     }, character(1))
   }
@@ -519,7 +531,7 @@ server <- function(input, output, session) {
         ),
         htmltools::tags$footer(
           class = "report-footer",
-          "(c) 2026 Volta Regional Coordinating Council (VRCC)"
+          "(c) 2026 Volta Regional Coordinating Council (VRCC) Creator: D.A Analytics (senyoackuaku@gmail.com)"
         )
       )
       

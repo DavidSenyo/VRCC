@@ -657,25 +657,6 @@ ui <- shinydashboard::dashboardPage(
           # STATISTICS DOWNLOAD BUTTONS
           # =====================================
           
-          # fluidRow(
-          #   column(
-          #     width = 6,
-          #     
-          #     downloadButton(
-          #       outputId = "download_project_statistics",
-          #       label = "Download Statistics (Excel)"
-          #     )
-          #   ),
-          #   
-          #   column(
-          #     width = 6,
-          #     
-          #     downloadButton(
-          #       outputId = "download_statistics_html",
-          #       label = "Download All Graphs (HTML)"
-          #     )
-          #   )
-          # ),
           fluidRow(
             column(
               width = 6,
@@ -687,9 +668,36 @@ ui <- shinydashboard::dashboardPage(
             
             column(
               width = 6,
+              # downloadButton(
+              #   outputId = "download_statistics_html",
+              #   label = "Download All Graphs (HTML)"
+              # )
+              
+              
+              
               downloadButton(
                 outputId = "download_statistics_html",
                 label = "Download All Graphs (HTML)"
+              ),
+              
+              br(),
+              
+              tags$div(
+                style = "margin-top: 10px;",
+                
+                tags$p(
+                  "On an iPhone, use the live interactive graphs as shown. ",
+                  "Downloaded HTML files may not display correctly in ",
+                  "the iPhone's Files preview. ",
+                  "For the best experience, open the downloaded HTML ",
+                  "file in a compatible web browser or on a computer.",
+                  
+                  style = paste(
+                    "color: #555;",
+                    "font-size: 12px;",
+                    "line-height: 1.5;"
+                  )
+                )
               )
             )
           ),
